@@ -1,5 +1,6 @@
 package com.example.playlistmaker
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,10 +26,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             PlaylistMakerTheme {
                 MainScreen(
-                    onSearchClick = { showButtonPressedToast(getString(R.string.search)) },
+                    onSearchClick = {
+                        startActivity(Intent(this, SearchActivity::class.java))
+                    },
                     onPlaylistsClick = { showButtonPressedToast(getString(R.string.playlists)) },
                     onFavoritesClick = { showButtonPressedToast(getString(R.string.favorites)) },
-                    onSettingsClick = { showButtonPressedToast(getString(R.string.settings)) },
+                    onSettingsClick = {
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                    },
                 )
             }
         }
