@@ -26,4 +26,10 @@
     <string name="back">Назад</string>
     <string name="clear_query">Очистить</string>
     <string name="no_email_app">На устройстве нет почтового приложения</string>
+
+    <string name="no_tracks_found">Ничего не найдено</string>
+    <string name="check_connection">Проверьте подключение к интернету</string>
+    <string name="track_details">Трек</string>
+    <string name="track_cover">Обложка трека</string>
+    <string name="arrow_forward">Перейти к треку</string>
 </resources>

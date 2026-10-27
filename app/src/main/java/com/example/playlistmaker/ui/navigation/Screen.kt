@@ -7,4 +7,9 @@ enum class Screen(val route: String) {
     MAIN("main"),
     SEARCH("search"),
     SETTINGS("settings"),
+    DETAILS("details/{trackJson}");
+
+    companion object {
+        const val TRACK_JSON = "trackJson"
+    }
 }
