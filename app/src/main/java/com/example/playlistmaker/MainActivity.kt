@@ -1,15 +1,14 @@
 package com.example.playlistmaker
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.playlistmaker.ui.main.MainScreen
+import androidx.navigation.compose.rememberNavController
+import com.example.playlistmaker.ui.navigation.PlaylistHost
 import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,25 +24,9 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             PlaylistMakerTheme {
-                MainScreen(
-                    onSearchClick = {
-                        startActivity(Intent(this, SearchActivity::class.java))
-                    },
-                    onPlaylistsClick = { showButtonPressedToast(getString(R.string.playlists)) },
-                    onFavoritesClick = { showButtonPressedToast(getString(R.string.favorites)) },
-                    onSettingsClick = {
-                        startActivity(Intent(this, SettingsActivity::class.java))
-                    },
-                )
+                val navController = rememberNavController()
+                PlaylistHost(navController = navController)
             }
         }
-    }
-
-    private fun showButtonPressedToast(buttonName: String) {
-        Toast.makeText(
-            this,
-            getString(R.string.button_pressed, buttonName),
-            Toast.LENGTH_SHORT,
-        ).show()
     }
 }
