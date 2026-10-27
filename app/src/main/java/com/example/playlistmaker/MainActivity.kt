@@ -1,36 +1,44 @@
 package com.example.playlistmaker
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import com.example.playlistmaker.ui.main.MainScreen
 import com.example.playlistmaker.ui.theme.PlaylistMakerTheme
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
+            navigationBarStyle = SystemBarStyle.light(
+                Color.Transparent.toArgb(),
+                Color.Transparent.toArgb(),
+            ),
+        )
         setContent {
             PlaylistMakerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(text = "Hello Android!")
-                    }
-                }
+                MainScreen(
+                    onSearchClick = { showButtonPressedToast(getString(R.string.search)) },
+                    onPlaylistsClick = { showButtonPressedToast(getString(R.string.playlists)) },
+                    onFavoritesClick = { showButtonPressedToast(getString(R.string.favorites)) },
+                    onSettingsClick = { showButtonPressedToast(getString(R.string.settings)) },
+                )
             }
         }
+    }
+
+    private fun showButtonPressedToast(buttonName: String) {
+        Toast.makeText(
+            this,
+            getString(R.string.button_pressed, buttonName),
+            Toast.LENGTH_SHORT,
+        ).show()
     }
 }
