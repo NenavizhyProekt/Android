@@ -54,7 +54,7 @@ fun MainScreen(
             text = stringResource(R.string.main_title),
             modifier = Modifier
                 .statusBarsPadding()
-                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                .padding(start = 16.dp, top = 16.dp, bottom = 32.dp),
             color = White,
             fontSize = 24.sp,
             fontWeight = FontWeight.Medium,
@@ -102,7 +102,7 @@ private fun MenuItem(
             .fillMaxWidth()
             .height(61.dp)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -111,7 +111,7 @@ private fun MenuItem(
             tint = TextPrimary,
             modifier = Modifier.size(24.dp),
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = title,
             modifier = Modifier.weight(1f),
