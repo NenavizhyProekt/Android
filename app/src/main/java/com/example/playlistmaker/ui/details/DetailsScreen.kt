@@ -40,12 +40,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.common.ScreenHeader
@@ -106,12 +108,21 @@ fun DetailsScreen(
                         .background(LightGray),
                     contentAlignment = Alignment.Center,
                 ) {
+                    // Заглушка видна, пока обложка не загружена или если её нет.
                     Icon(
                         imageVector = Icons.Default.MusicNote,
                         contentDescription = stringResource(R.string.track_cover),
                         tint = IconGray,
                         modifier = Modifier.size(80.dp),
                     )
+                    if (currentTrack.artworkUrl100.isNotBlank()) {
+                        AsyncImage(
+                            model = currentTrack.artworkUrl100,
+                            contentDescription = stringResource(R.string.track_cover),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(

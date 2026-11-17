@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,10 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.theme.IconGray
@@ -51,12 +54,21 @@ fun TrackListItem(
                 .background(LightGray),
             contentAlignment = Alignment.Center,
         ) {
+            // Заглушка видна, пока обложка не загружена или если её нет.
             Icon(
                 imageVector = Icons.Default.MusicNote,
                 contentDescription = stringResource(R.string.track_cover),
                 tint = IconGray,
                 modifier = Modifier.size(24.dp),
             )
+            if (track.artworkUrl100.isNotBlank()) {
+                AsyncImage(
+                    model = track.artworkUrl100,
+                    contentDescription = stringResource(R.string.track_cover),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(

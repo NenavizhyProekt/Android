@@ -24,7 +24,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -123,15 +128,18 @@ fun SearchScreen(
                         },
                         onClearHistoryClick = { searchViewModel.clearHistory() },
                         modifier = Modifier
-                            .fillMaxSize()
+                            .weight(1f)
+                            .fillMaxWidth()
                             .padding(top = 24.dp),
                     )
                 } else {
                     SearchResults(
                         screenState = screenState,
                         onTrackClick = navigateToDetailScreen,
+                        onRefreshClick = { searchViewModel.retry() },
                         modifier = Modifier
-                            .fillMaxSize()
+                            .weight(1f)
+                            .fillMaxWidth()
                             .padding(top = 16.dp),
                     )
                 }
@@ -294,6 +302,7 @@ private fun HistoryItem(
 private fun SearchResults(
     screenState: SearchState,
     onTrackClick: (Track) -> Unit,
+    onRefreshClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (screenState) {
@@ -311,8 +320,9 @@ private fun SearchResults(
         is SearchState.Success -> {
             val tracks = screenState.foundList
             if (tracks.isEmpty()) {
-                InformerState(
-                    titleText = stringResource(R.string.no_tracks_found),
+                PlaceholderState(
+                    icon = Icons.Filled.SearchOff,
+                    title = stringResource(R.string.no_tracks_found),
                     modifier = modifier,
                 )
             } else {
@@ -331,11 +341,20 @@ private fun SearchResults(
             }
         }
 
+        SearchState.Empty -> {
+            PlaceholderState(
+                icon = Icons.Filled.SearchOff,
+                title = stringResource(R.string.no_tracks_found),
+                modifier = modifier,
+            )
+        }
+
         is SearchState.Fail -> {
-            val noResults = screenState.error == SearchViewModel.NO_RESULTS_MESSAGE
-            InformerState(
-                titleText = screenState.error,
-                subtitleText = if (noResults) null else stringResource(R.string.check_connection),
+            PlaceholderState(
+                icon = Icons.Filled.CloudOff,
+                title = stringResource(R.string.search_error),
+                subtitle = stringResource(R.string.check_connection),
+                onRefreshClick = onRefreshClick,
                 modifier = modifier,
             )
         }
@@ -343,10 +362,12 @@ private fun SearchResults(
 }
 
 @Composable
-private fun InformerState(
-    titleText: String,
+private fun PlaceholderState(
+    icon: ImageVector,
+    title: String,
     modifier: Modifier = Modifier,
-    subtitleText: String? = null,
+    subtitle: String? = null,
+    onRefreshClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -355,20 +376,44 @@ private fun InformerState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = IconGray,
+            modifier = Modifier.size(120.dp),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = titleText,
+            text = title,
             color = TextPrimary,
-            fontSize = 18.sp,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
         )
-        if (subtitleText != null) {
+        if (subtitle != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = subtitleText,
+                text = subtitle,
                 color = IconGray,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
             )
+        }
+        if (onRefreshClick != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onRefreshClick,
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PlaylistBlue,
+                    contentColor = White,
+                ),
+            ) {
+                Text(
+                    text = stringResource(R.string.refresh),
+                    fontSize = 14.sp,
+                )
+            }
         }
     }
 }
