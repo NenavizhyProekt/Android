@@ -2,6 +2,9 @@ package com.example.playlistmaker
 
 import android.app.Application
 import com.example.playlistmaker.data.di.repositoryModule
+import com.example.playlistmaker.ui.details.DetailsViewModel
+import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
+import com.example.playlistmaker.ui.playlists.PlaylistsViewModel
 import com.example.playlistmaker.ui.search.SearchViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -18,7 +21,10 @@ class MyApplication : Application() {
             modules(
                 repositoryModule,
                 module {
-                    viewModel { SearchViewModel(get()) }
+                    viewModel { SearchViewModel(get(), get()) }
+                    viewModel { PlaylistsViewModel(get()) }
+                    viewModel { NewPlaylistViewModel(get()) }
+                    viewModel { DetailsViewModel(get(), get()) }
                 },
             )
         }

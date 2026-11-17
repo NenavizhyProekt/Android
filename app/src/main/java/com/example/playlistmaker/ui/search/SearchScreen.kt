@@ -1,6 +1,7 @@
 package com.example.playlistmaker.ui.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,8 +43,10 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.playlistmaker.R
@@ -61,11 +66,12 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
 ) {
     val screenState by searchViewModel.searchScreenState.collectAsState()
+    val history by searchViewModel.searchHistory.collectAsState()
     val focusManager = LocalFocusManager.current
     var query by rememberSaveable { mutableStateOf("") }
 
     val onSearchClick = {
-        if (query.isNotEmpty()) {
+        if (query.isNotBlank()) {
             searchViewModel.searchTracks(query)
             focusManager.clearFocus()
         }
@@ -95,20 +101,40 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 SearchTextField(
                     query = query,
-                    onQueryChange = { query = it },
+                    onQueryChange = { newQuery ->
+                        query = newQuery
+                        searchViewModel.onQueryChanged(newQuery)
+                    },
                     onSearchClick = onSearchClick,
                     onClearClick = {
                         query = ""
                         searchViewModel.clearSearch()
+                        focusManager.clearFocus()
                     },
                 )
-                SearchResults(
-                    screenState = screenState,
-                    onTrackClick = navigateToDetailScreen,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 16.dp),
-                )
+
+                if (query.isEmpty() && history.isNotEmpty()) {
+                    SearchHistory(
+                        history = history,
+                        onHistoryClick = { historyQuery ->
+                            query = historyQuery
+                            searchViewModel.searchTracks(historyQuery)
+                            focusManager.clearFocus()
+                        },
+                        onClearHistoryClick = { searchViewModel.clearHistory() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 24.dp),
+                    )
+                } else {
+                    SearchResults(
+                        screenState = screenState,
+                        onTrackClick = navigateToDetailScreen,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 16.dp),
+                    )
+                }
             }
         }
     }
@@ -184,6 +210,84 @@ private fun SearchTextField(
             }
         },
     )
+}
+
+@Composable
+private fun SearchHistory(
+    history: List<String>,
+    onHistoryClick: (String) -> Unit,
+    onClearHistoryClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.search_history),
+                modifier = Modifier.weight(1f),
+                color = TextPrimary,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Medium,
+            )
+            TextButton(onClick = onClearHistoryClick) {
+                Text(
+                    text = stringResource(R.string.clear_history),
+                    color = PlaylistBlue,
+                    fontSize = 14.sp,
+                )
+            }
+        }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+        ) {
+            items(items = history) { historyItem ->
+                HistoryItem(
+                    query = historyItem,
+                    onClick = { onHistoryClick(historyItem) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HistoryItem(
+    query: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(61.dp)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            tint = IconGray,
+            modifier = Modifier.size(24.dp),
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = query,
+            modifier = Modifier.weight(1f),
+            color = TextPrimary,
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = IconGray,
+            modifier = Modifier.size(24.dp),
+        )
+    }
 }
 
 @Composable
