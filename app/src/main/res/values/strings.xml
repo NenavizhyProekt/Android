@@ -28,6 +28,8 @@
     <string name="no_email_app">На устройстве нет почтового приложения</string>
 
     <string name="no_tracks_found">Ничего не найдено</string>
+    <string name="search_error">На сервере произошла ошибка</string>
+    <string name="refresh">Обновить</string>
     <string name="check_connection">Проверьте подключение к интернету</string>
     <string name="track_details">Трек</string>
     <string name="track_cover">Обложка трека</string>
@@ -36,12 +38,14 @@
     <string name="title_playlists">Плейлисты</string>
     <string name="title_favorites">Избранное</string>
     <string name="title_new_playlist">Новый плейлист</string>
+    <string name="title_playlist">Плейлист</string>
     <string name="new_playlist_name">Название</string>
     <string name="new_playlist_description">Описание</string>
     <string name="create_playlist">Создать</string>
     <string name="add_playlist">Добавить плейлист</string>
     <string name="empty_playlists">У вас пока нет плейлистов</string>
     <string name="empty_favorites">Здесь появятся избранные треки</string>
+    <string name="playlist_empty_tracks">В плейлисте пока нет треков</string>
 
     <string name="search_history">История поиска</string>
     <string name="clear_history">Очистить историю</string>
@@ -50,6 +54,7 @@
     <string name="remove_from_favorites">Удалить из избранного</string>
     <string name="add_to_playlist">Добавить в плейлист</string>
     <string name="added_to_playlist">Добавлено в плейлист «%1$s»</string>
+    <string name="playlist_cover">Обложка плейлиста</string>
 
     <plurals name="playlist_tracks_count">
         <item quantity="one">%1$d трек</item>

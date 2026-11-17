@@ -10,9 +10,11 @@ enum class Screen(val route: String) {
     DETAILS("details/{trackJson}"),
     PLAYLISTS("playlists"),
     NEW_PLAYLIST("new_playlist"),
+    PLAYLIST("playlist/{playlistId}"),
     FAVORITES("favorites");
 
     companion object {
         const val TRACK_JSON = "trackJson"
+        const val PLAYLIST_ID = "playlistId"
     }
 }

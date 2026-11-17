@@ -1,6 +1,9 @@
 package com.example.playlistmaker.data.di
 
 import com.example.playlistmaker.data.DatabaseMock
+import com.example.playlistmaker.data.network.ITunesApi
+import com.example.playlistmaker.data.network.NetworkClient
+import com.example.playlistmaker.data.network.RetrofitNetworkClient
 import com.example.playlistmaker.data.network.TracksRepositoryImpl
 import com.example.playlistmaker.data.repository.PlaylistsRepositoryImpl
 import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
@@ -8,12 +11,31 @@ import com.example.playlistmaker.domain.api.PlaylistsRepository
 import com.example.playlistmaker.domain.api.SearchHistoryRepository
 import com.example.playlistmaker.domain.api.TracksRepository
 import org.koin.dsl.module
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+private const val ITUNES_BASE_URL = "https://itunes.apple.com/"
 
 val repositoryModule = module {
     single<DatabaseMock> { DatabaseMock() }
 
+    single<Retrofit> {
+        Retrofit.Builder()
+            .baseUrl(ITUNES_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    single<ITunesApi> {
+        get<Retrofit>().create(ITunesApi::class.java)
+    }
+
+    factory<NetworkClient> {
+        RetrofitNetworkClient(get())
+    }
+
     factory<TracksRepository> {
-        TracksRepositoryImpl(get())
+        TracksRepositoryImpl(get(), get())
     }
 
     factory<PlaylistsRepository> {

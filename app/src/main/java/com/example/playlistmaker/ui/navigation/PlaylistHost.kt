@@ -16,6 +16,8 @@ import com.example.playlistmaker.ui.favorites.FavoritesScreen
 import com.example.playlistmaker.ui.main.MainScreen
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistScreen
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
+import com.example.playlistmaker.ui.playlist.PlaylistScreen
+import com.example.playlistmaker.ui.playlist.PlaylistViewModel
 import com.example.playlistmaker.ui.playlists.PlaylistsScreen
 import com.example.playlistmaker.ui.playlists.PlaylistsViewModel
 import com.example.playlistmaker.ui.search.SearchScreen
@@ -23,6 +25,7 @@ import com.example.playlistmaker.ui.search.SearchViewModel
 import com.example.playlistmaker.ui.settings.SettingsScreen
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun PlaylistHost(
@@ -63,9 +66,28 @@ fun PlaylistHost(
             PlaylistsScreen(
                 playlistsViewModel = koinViewModel<PlaylistsViewModel>(),
                 addNewPlaylist = { navigateTo(navController, Screen.NEW_PLAYLIST) },
-                // Экран плейлиста появится в следующем спринте.
-                navigateToPlaylist = { },
+                navigateToPlaylist = { playlistId ->
+                    navController.navigate("playlist/$playlistId")
+                },
                 onBackClick = { navigateBack(navController) },
+            )
+        }
+
+        composable(
+            route = Screen.PLAYLIST.route,
+            arguments = listOf(
+                navArgument(Screen.PLAYLIST_ID) { type = NavType.LongType },
+            ),
+        ) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getLong(Screen.PLAYLIST_ID) ?: 0L
+            PlaylistScreen(
+                viewModel = koinViewModel<PlaylistViewModel> {
+                    parametersOf(playlistId)
+                },
+                onTrackClick = { track ->
+                    navigateToTrackDetails(navController, gson, track)
+                },
+                navigateBack = { navigateBack(navController) },
             )
         }
 

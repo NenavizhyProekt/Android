@@ -22,6 +22,7 @@ class SearchViewModel(
     val searchHistory = _searchHistory.asStateFlow()
 
     private var searchJob: Job? = null
+    private var lastQuery: String? = null
 
     /**
      * Вызывается при каждом изменении текста в поле поиска.
@@ -51,6 +52,11 @@ class SearchViewModel(
         }
     }
 
+    /** Повторяет последний поисковый запрос, например по кнопке «Обновить». */
+    fun retry() {
+        lastQuery?.let { query -> searchTracks(query) }
+    }
+
     fun clearSearch() {
         searchJob?.cancel()
         _searchScreenState.value = SearchState.Initial
@@ -62,23 +68,24 @@ class SearchViewModel(
     }
 
     private suspend fun performSearch(query: String) {
+        lastQuery = query
         _searchScreenState.value = SearchState.Searching
         try {
             val result = trackRepository.searchTracks(query)
             _searchScreenState.value = if (result.isEmpty()) {
-                SearchState.Fail(NO_RESULTS_MESSAGE)
+                SearchState.Empty
             } else {
                 SearchState.Success(result)
             }
             searchHistoryRepository.addToHistory(query)
             _searchHistory.value = searchHistoryRepository.getHistory()
         } catch (e: Exception) {
-            _searchScreenState.value = SearchState.Fail("Ошибка при поиске: ${e.message}")
+            _searchScreenState.value = SearchState.Fail(e.message ?: DEFAULT_ERROR_MESSAGE)
         }
     }
 
     companion object {
-        const val NO_RESULTS_MESSAGE = "Ничего не найдено"
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
+        private const val DEFAULT_ERROR_MESSAGE = "Не удалось выполнить запрос"
     }
 }
