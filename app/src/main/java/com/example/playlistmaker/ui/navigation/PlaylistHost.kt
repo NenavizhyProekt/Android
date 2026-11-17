@@ -1,25 +1,28 @@
 package com.example.playlistmaker.ui.navigation
 
-import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.details.DetailsScreen
+import com.example.playlistmaker.ui.details.DetailsViewModel
+import com.example.playlistmaker.ui.favorites.FavoritesScreen
 import com.example.playlistmaker.ui.main.MainScreen
+import com.example.playlistmaker.ui.newplaylist.NewPlaylistScreen
+import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
+import com.example.playlistmaker.ui.playlists.PlaylistsScreen
+import com.example.playlistmaker.ui.playlists.PlaylistsViewModel
 import com.example.playlistmaker.ui.search.SearchScreen
 import com.example.playlistmaker.ui.search.SearchViewModel
 import com.example.playlistmaker.ui.settings.SettingsScreen
 import com.google.gson.Gson
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PlaylistHost(
@@ -28,8 +31,6 @@ fun PlaylistHost(
     gson: Gson,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-
     NavHost(
         navController = navController,
         startDestination = Screen.MAIN.route,
@@ -38,12 +39,8 @@ fun PlaylistHost(
         composable(route = Screen.MAIN.route) {
             MainScreen(
                 onSearchClick = { navigateTo(navController, Screen.SEARCH) },
-                onPlaylistsClick = {
-                    showButtonPressedToast(context, context.getString(R.string.playlists))
-                },
-                onFavoritesClick = {
-                    showButtonPressedToast(context, context.getString(R.string.favorites))
-                },
+                onPlaylistsClick = { navigateTo(navController, Screen.PLAYLISTS) },
+                onFavoritesClick = { navigateTo(navController, Screen.FAVORITES) },
                 onSettingsClick = { navigateTo(navController, Screen.SETTINGS) },
             )
         }
@@ -62,6 +59,27 @@ fun PlaylistHost(
             SettingsScreen(onBackClick = { navigateBack(navController) })
         }
 
+        composable(route = Screen.PLAYLISTS.route) {
+            PlaylistsScreen(
+                playlistsViewModel = koinViewModel<PlaylistsViewModel>(),
+                addNewPlaylist = { navigateTo(navController, Screen.NEW_PLAYLIST) },
+                // Экран плейлиста появится в следующем спринте.
+                navigateToPlaylist = { },
+                onBackClick = { navigateBack(navController) },
+            )
+        }
+
+        composable(route = Screen.NEW_PLAYLIST.route) {
+            NewPlaylistScreen(
+                viewModel = koinViewModel<NewPlaylistViewModel>(),
+                navigateBack = { navigateBack(navController) },
+            )
+        }
+
+        composable(route = Screen.FAVORITES.route) {
+            FavoritesScreen(onBackClick = { navigateBack(navController) })
+        }
+
         composable(
             route = Screen.DETAILS.route,
             arguments = listOf(
@@ -75,6 +93,7 @@ fun PlaylistHost(
             if (track != null) {
                 DetailsScreen(
                     track = track,
+                    viewModel = koinViewModel<DetailsViewModel>(),
                     onBackClick = { navigateBack(navController) },
                 )
             } else {
@@ -103,12 +122,4 @@ private fun navigateToTrackDetails(
 
 private fun navigateBack(navController: NavHostController) {
     navController.navigateUp()
-}
-
-private fun showButtonPressedToast(context: Context, buttonName: String) {
-    Toast.makeText(
-        context,
-        context.getString(R.string.button_pressed, buttonName),
-        Toast.LENGTH_SHORT,
-    ).show()
 }
