@@ -55,6 +55,9 @@
     <string name="add_to_playlist">Добавить в плейлист</string>
     <string name="added_to_playlist">Добавлено в плейлист «%1$s»</string>
     <string name="playlist_cover">Обложка плейлиста</string>
+    <string name="add_cover">Добавить обложку</string>
+    <string name="select_image">Выбрать изображение</string>
+    <string name="permission_required">Для выбора обложки необходимо разрешение на доступ к файлам</string>
 
     <plurals name="playlist_tracks_count">
         <item quantity="one">%1$d трек</item>
