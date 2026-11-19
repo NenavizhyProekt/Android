@@ -5,4 +5,5 @@ import androidx.compose.ui.graphics.Color
 val PlaylistBlue = Color(0xFF3772E7)
 val TextPrimary = Color(0xFF1A1B22)
 val IconGray = Color(0xFFAEAFB4)
+val LightGray = Color(0xFFE6E8EB)
 val White = Color(0xFFFFFFFF)

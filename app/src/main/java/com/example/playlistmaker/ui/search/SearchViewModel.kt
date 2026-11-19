@@ -1,0 +1,99 @@
+package com.example.playlistmaker.ui.search
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.playlistmaker.domain.api.SearchHistoryRepository
+import com.example.playlistmaker.domain.api.TracksRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class SearchViewModel(
+    private val trackRepository: TracksRepository,
+    private val searchHistoryRepository: SearchHistoryRepository,
+) : ViewModel() {
+
+    private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
+    val searchScreenState = _searchScreenState.asStateFlow()
+
+    val searchHistory: StateFlow<List<String>> = searchHistoryRepository.getHistory()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+            initialValue = emptyList(),
+        )
+
+    private var searchJob: Job? = null
+    private var lastQuery: String? = null
+
+    /**
+     * Вызывается при каждом изменении текста в поле поиска.
+     * Поиск запускается автоматически через [SEARCH_DEBOUNCE_DELAY] после последнего символа.
+     */
+    fun onQueryChanged(query: String) {
+        searchJob?.cancel()
+        if (query.isBlank()) {
+            _searchScreenState.value = SearchState.Initial
+            return
+        }
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DEBOUNCE_DELAY)
+            performSearch(query)
+        }
+    }
+
+    /**
+     * Немедленный поиск: по нажатию на иконку поиска, по кнопке клавиатуры
+     * или по клику на элемент истории поиска.
+     */
+    fun searchTracks(query: String) {
+        searchJob?.cancel()
+        if (query.isBlank()) return
+        searchJob = viewModelScope.launch {
+            performSearch(query)
+        }
+    }
+
+    /** Повторяет последний поисковый запрос, например по кнопке «Обновить». */
+    fun retry() {
+        lastQuery?.let { query -> searchTracks(query) }
+    }
+
+    fun clearSearch() {
+        searchJob?.cancel()
+        _searchScreenState.value = SearchState.Initial
+    }
+
+    fun clearHistory() {
+        viewModelScope.launch {
+            searchHistoryRepository.clearHistory()
+        }
+    }
+
+    private suspend fun performSearch(query: String) {
+        lastQuery = query
+        _searchScreenState.value = SearchState.Searching
+        try {
+            val result = trackRepository.searchTracks(query)
+            _searchScreenState.value = if (result.isEmpty()) {
+                SearchState.Empty
+            } else {
+                SearchState.Success(result)
+            }
+            searchHistoryRepository.addToHistory(query)
+        } catch (e: Exception) {
+            _searchScreenState.value = SearchState.Fail(e.message ?: DEFAULT_ERROR_MESSAGE)
+        }
+    }
+
+    companion object {
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
+        private const val STOP_TIMEOUT_MILLIS = 5_000L
+        private const val DEFAULT_ERROR_MESSAGE = "Не удалось выполнить запрос"
+    }
+}
