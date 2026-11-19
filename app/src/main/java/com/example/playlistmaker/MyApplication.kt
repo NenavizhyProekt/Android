@@ -1,6 +1,7 @@
 package com.example.playlistmaker
 
 import android.app.Application
+import com.example.playlistmaker.data.di.databaseModule
 import com.example.playlistmaker.data.di.repositoryModule
 import com.example.playlistmaker.ui.details.DetailsViewModel
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
@@ -20,6 +21,7 @@ class MyApplication : Application() {
         startKoin {
             androidContext(this@MyApplication)
             modules(
+                databaseModule,
                 repositoryModule,
                 module {
                     viewModel { SearchViewModel(get(), get()) }

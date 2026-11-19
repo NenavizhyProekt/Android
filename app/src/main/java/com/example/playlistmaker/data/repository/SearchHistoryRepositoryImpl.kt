@@ -1,22 +1,22 @@
 package com.example.playlistmaker.data.repository
 
-import com.example.playlistmaker.data.DatabaseMock
+import com.example.playlistmaker.data.preferences.SearchHistoryPreferences
 import com.example.playlistmaker.domain.api.SearchHistoryRepository
+import kotlinx.coroutines.flow.Flow
 
 class SearchHistoryRepositoryImpl(
-    private val database: DatabaseMock,
+    private val searchHistoryPreferences: SearchHistoryPreferences,
 ) : SearchHistoryRepository {
 
-    override fun getHistory(): List<String> {
-        return database.getHistory()
+    override fun getHistory(): Flow<List<String>> {
+        return searchHistoryPreferences.history
     }
 
-    override fun addToHistory(word: String) {
-        if (word.isBlank()) return
-        database.addToHistory(word.trim())
+    override suspend fun addToHistory(word: String) {
+        searchHistoryPreferences.addEntry(word)
     }
 
-    override fun clearHistory() {
-        database.clearHistory()
+    override suspend fun clearHistory() {
+        searchHistoryPreferences.clearHistory()
     }
 }

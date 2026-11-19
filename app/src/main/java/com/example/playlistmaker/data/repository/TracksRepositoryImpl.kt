@@ -1,16 +1,22 @@
-package com.example.playlistmaker.data.network
+package com.example.playlistmaker.data.repository
 
-import com.example.playlistmaker.data.DatabaseMock
+import com.example.playlistmaker.data.db.dao.PlaylistDao
+import com.example.playlistmaker.data.db.dao.TrackDao
+import com.example.playlistmaker.data.db.entity.PlaylistTrackEntity
+import com.example.playlistmaker.data.db.mapper.toDomain
+import com.example.playlistmaker.data.db.mapper.toEntity
 import com.example.playlistmaker.data.dto.TrackDto
+import com.example.playlistmaker.data.network.NetworkClient
 import com.example.playlistmaker.domain.api.TracksRepository
 import com.example.playlistmaker.domain.model.Track
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import java.util.Locale
 
 class TracksRepositoryImpl(
     private val networkClient: NetworkClient,
-    private val database: DatabaseMock,
+    private val trackDao: TrackDao,
+    private val playlistDao: PlaylistDao,
 ) : TracksRepository {
 
     override suspend fun searchTracks(expression: String): List<Track> {
@@ -19,27 +25,31 @@ class TracksRepositoryImpl(
     }
 
     override fun getTrackByNameAndArtist(track: Track): Flow<Track?> {
-        return database.getTrackByNameAndArtist(track)
+        return trackDao.getTrackByNameAndArtist(track.trackName, track.artistName)
+            .map { entity -> entity?.toDomain() }
     }
 
     override fun getFavoriteTracks(): Flow<List<Track>> {
-        return database.getFavoriteTracks()
+        return trackDao.getFavoriteTracks()
+            .map { entities -> entities.map { entity -> entity.toDomain() } }
     }
 
     override suspend fun insertTrackToPlaylist(track: Track, playlistId: Long) {
-        // Сохраняем трек, чтобы он отображался в плейлисте, не теряя статус «Избранное».
-        val storedTrack = database.getTrackByNameAndArtist(track).firstOrNull()
-        val trackToStore = storedTrack?.let { track.copy(favorite = it.favorite) } ?: track
-        database.insertTrack(trackToStore)
-        database.addTrackToPlaylist(trackToStore.id, playlistId)
+        // Сохраняем трек в базу, не теряя статус «Избранное», если он уже был сохранён.
+        val storedTrack = trackDao.getTrackById(track.id)
+        val isFavorite = storedTrack?.isFavorite ?: track.favorite
+        trackDao.upsertTrack(track.toEntity(isFavorite))
+        playlistDao.addTrackToPlaylist(
+            PlaylistTrackEntity(playlistId = playlistId, trackId = track.id),
+        )
     }
 
     override suspend fun removeTrackFromPlaylist(track: Track, playlistId: Long) {
-        database.removeTrackFromPlaylist(track.id, playlistId)
+        playlistDao.removeTrackFromPlaylist(playlistId = playlistId, trackId = track.id)
     }
 
     override suspend fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean) {
-        database.insertTrack(track.copy(favorite = isFavorite))
+        trackDao.upsertTrack(track.toEntity(isFavorite))
     }
 }
 

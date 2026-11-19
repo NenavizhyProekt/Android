@@ -1,9 +1,11 @@
 package com.example.playlistmaker.domain.api
 
+import kotlinx.coroutines.flow.Flow
+
 interface SearchHistoryRepository {
-    fun getHistory(): List<String>
+    fun getHistory(): Flow<List<String>>
 
-    fun addToHistory(word: String)
+    suspend fun addToHistory(word: String)
 
-    fun clearHistory()
+    suspend fun clearHistory()
 }
