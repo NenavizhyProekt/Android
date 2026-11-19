@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.playlistmaker.data.di.databaseModule
 import com.example.playlistmaker.data.di.repositoryModule
 import com.example.playlistmaker.ui.details.DetailsViewModel
+import com.example.playlistmaker.ui.favorites.FavoritesViewModel
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
 import com.example.playlistmaker.ui.playlist.PlaylistViewModel
 import com.example.playlistmaker.ui.playlists.PlaylistsViewModel
@@ -29,6 +30,7 @@ class MyApplication : Application() {
                     viewModel { NewPlaylistViewModel(get()) }
                     viewModel { params -> PlaylistViewModel(get(), params.get()) }
                     viewModel { DetailsViewModel(get(), get()) }
+                    viewModel { FavoritesViewModel(get()) }
                 },
             )
         }

@@ -13,6 +13,7 @@ import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.ui.details.DetailsScreen
 import com.example.playlistmaker.ui.details.DetailsViewModel
 import com.example.playlistmaker.ui.favorites.FavoritesScreen
+import com.example.playlistmaker.ui.favorites.FavoritesViewModel
 import com.example.playlistmaker.ui.main.MainScreen
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistScreen
 import com.example.playlistmaker.ui.newplaylist.NewPlaylistViewModel
@@ -99,7 +100,13 @@ fun PlaylistHost(
         }
 
         composable(route = Screen.FAVORITES.route) {
-            FavoritesScreen(onBackClick = { navigateBack(navController) })
+            FavoritesScreen(
+                viewModel = koinViewModel<FavoritesViewModel>(),
+                onTrackClick = { track ->
+                    navigateToTrackDetails(navController, gson, track)
+                },
+                onBackClick = { navigateBack(navController) },
+            )
         }
 
         composable(
