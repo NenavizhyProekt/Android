@@ -7,7 +7,10 @@ import com.example.playlistmaker.domain.api.TracksRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
@@ -18,8 +21,12 @@ class SearchViewModel(
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     val searchScreenState = _searchScreenState.asStateFlow()
 
-    private val _searchHistory = MutableStateFlow(searchHistoryRepository.getHistory())
-    val searchHistory = _searchHistory.asStateFlow()
+    val searchHistory: StateFlow<List<String>> = searchHistoryRepository.getHistory()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+            initialValue = emptyList(),
+        )
 
     private var searchJob: Job? = null
     private var lastQuery: String? = null
@@ -63,8 +70,9 @@ class SearchViewModel(
     }
 
     fun clearHistory() {
-        searchHistoryRepository.clearHistory()
-        _searchHistory.value = emptyList()
+        viewModelScope.launch {
+            searchHistoryRepository.clearHistory()
+        }
     }
 
     private suspend fun performSearch(query: String) {
@@ -78,7 +86,6 @@ class SearchViewModel(
                 SearchState.Success(result)
             }
             searchHistoryRepository.addToHistory(query)
-            _searchHistory.value = searchHistoryRepository.getHistory()
         } catch (e: Exception) {
             _searchScreenState.value = SearchState.Fail(e.message ?: DEFAULT_ERROR_MESSAGE)
         }
@@ -86,6 +93,7 @@ class SearchViewModel(
 
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
+        private const val STOP_TIMEOUT_MILLIS = 5_000L
         private const val DEFAULT_ERROR_MESSAGE = "Не удалось выполнить запрос"
     }
 }
