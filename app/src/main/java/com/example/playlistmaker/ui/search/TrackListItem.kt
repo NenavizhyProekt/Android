@@ -1,7 +1,8 @@
 package com.example.playlistmaker.ui.search
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,9 +35,11 @@ import com.example.playlistmaker.ui.theme.IconGray
 import com.example.playlistmaker.ui.theme.LightGray
 import com.example.playlistmaker.ui.theme.TextPrimary
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackListItem(
     track: Track,
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -44,7 +47,10 @@ fun TrackListItem(
         modifier = modifier
             .fillMaxWidth()
             .height(61.dp)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
